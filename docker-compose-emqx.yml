@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  emqx:
+    image: emqx/emqx:5.5.0
+    container_name: emqx
+    ports:
+      - "11883:1883"    # MQTT (mapped to avoid Windows exclusion)
+      - "18883:8883"    # MQTT/SSL (mapped to avoid Windows exclusion)
+      - "18083:8083"    # MQTT/WebSocket (mapped to avoid Windows exclusion)
+      - "18084:8084"    # MQTT/WebSocket/SSL (mapped to avoid Windows exclusion)
+      - "19083:18083"   # Dashboard (mapped to avoid Windows exclusion)
+    environment:
+      # Dashboard credentials
+      EMQX_DASHBOARD__DEFAULT_USERNAME: admin
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: public
+      # Enable anonymous authentication (for testing)
+      EMQX_AUTH__ANONYMOUS: 'true'
+      # Log level
+      EMQX_LOG__CONSOLE_HANDLER__LEVEL: info
+    volumes:
+      - emqx_data:/opt/emqx/data
+      - emqx_log:/opt/emqx/log
+    networks:
+      - emqx_network
+
+  # Optional: MQTT client tool for testing
+  mqtt-client:
+    image: alpine:latest
+    container_name: mqtt-client
+    command: >
+      sh -c "apk add --no-cache mosquitto-clients && 
+             echo 'MQTT client tools installed. Use docker exec -it mqtt-client sh to access' &&
+             tail -f /dev/null"
+    networks:
+      - emqx_network
+    depends_on:
+      - emqx
+
+volumes:
+  emqx_data:
+  emqx_log:
+
+networks:
+  emqx_network:
+    driver: bridge
