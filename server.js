@@ -4,6 +4,7 @@ const mqtt = require('mqtt');
 const serverId = 'server_main';
 const clients = new Map(); // Map of clientId -> {status, lastSeen, info}
 let client = null;
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1IjoxLCJleHAiOjE3NTQ5MDMxODYsImlhdCI6MTc1NDg5OTU4Nn0.tzcCLQMpe3cdhWZtzaxR41gcL4nr8zk-GR425xuhyrc';
 
 // اتصال به MQTT
 function connect() {
@@ -12,7 +13,9 @@ function connect() {
     client = mqtt.connect({
         host: 'localhost',
         port: 11883,
-        clientId: serverId
+        clientId: serverId,
+        username: '',
+        password: token
     });
     
     client.on('connect', onConnect);
