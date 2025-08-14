@@ -1,22 +1,22 @@
 const mqtt = require('mqtt');
 
-// متغیرهای سراسری
+// Global variables
 let clientId = '';
 let clientName = '';
 let client = null;
 let isConnected = false;
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1IjoxLCJleHAiOjE3NTQ5MDMxODYsImlhdCI6MTc1NDg5OTU4Nn0.tzcCLQMpe3cdhWZtzaxR41gcL4nr8zk-GR425xuhyrc';
 
-// تابع اصلی راه‌اندازی
+// Main initialization function
 function init(id, name) {
     clientId = id || 'client_' + Math.random().toString(16).substr(2, 6);
-    clientName = name || `کلاینت-${clientId}`;
+    clientName = name || `Client-${clientId}`;
 
     connect();
 }
 
 function connect() {
-    console.log(`🔌 ${clientName} در حال اتصال به MQTT...`);
+    console.log(`🔌 ${clientName} connecting to MQTT...`);
 
     client = mqtt.connect({
         host: 'localhost',
@@ -39,27 +39,27 @@ function connect() {
 
     client.on('connect', onConnect);
     client.on('message', onMessage);
-    client.on('error', (error) => console.error(`❌ خطا ${clientName}:`, error));
+    client.on('error', (error) => console.error(`❌ Error ${clientName}:`, error));
     client.on('close', onDisconnect);
 }
 
 function onConnect() {
-    console.log(`✅ ${clientName} متصل شد`);
+    console.log(`✅ ${clientName} connected`);
     console.log(`🆔 Client ID: ${clientId}`);
 
     isConnected = true;
 
-    // Subscribe به پیام‌های سرور
-    client.subscribe(`server/to/${clientId}`); // پیام‌های شخصی
-    client.subscribe('server/broadcast');       // پیام‌های عمومی
+    // Subscribe to server messages
+    client.subscribe(`server/to/${clientId}`); // Personal messages
+    client.subscribe('server/broadcast');       // Public messages
 
-    // اعلام اتصال به سرور
+    // Announce connection to server
     announceConnection();
 
-    // شروع فعالیت‌ها
+    // Start activities
     startClientActivities();
 
-    console.log(`👂 ${clientName} آماده دریافت پیام‌ها\n`);
+    console.log(`👂 ${clientName} ready to receive messages\n`);
 }
 
 function onMessage(topic, message) {
@@ -67,24 +67,24 @@ function onMessage(topic, message) {
         const data = JSON.parse(message.toString());
 
         if (topic === 'server/broadcast') {
-            console.log(`📢 [${clientName}] پیام عمومی از سرور:`);
+            console.log(`📢 [${clientName}] Public message from server:`);
         } else {
-            console.log(`📨 [${clientName}] پیام شخصی از سرور:`);
+            console.log(`📨 [${clientName}] Personal message from server:`);
         }
 
         console.log(`   💬 "${data.text}"`);
-        console.log(`   ⏰ ${new Date(data.timestamp).toLocaleTimeString('fa-IR')}`);
+        console.log(`   ⏰ ${new Date(data.timestamp).toLocaleTimeString('en-US')}`);
 
-        // پاسخ به پیام‌های شخصی
+        // Respond to personal messages
         if (topic !== 'server/broadcast' && Math.random() > 0.3) {
             setTimeout(() => {
                 const responses = [
-                    'ممنون!',
-                    'باشه حتماً',
-                    'فهمیدم',
-                    'اوکی',
-                    'دستت درد نکنه',
-                    'چشم'
+                    'Thank you!',
+                    'Sure thing',
+                    'Got it',
+                    'OK',
+                    'Thanks',
+                    'Eye'
                 ];
                 const response = responses[Math.floor(Math.random() * responses.length)];
                 sendMessage(response);
@@ -92,12 +92,12 @@ function onMessage(topic, message) {
         }
 
     } catch (error) {
-        console.error(`❌ خطا در پردازش پیام ${clientName}:`, error);
+        console.error(`❌ Error processing message ${clientName}:`, error);
     }
 }
 
 function onDisconnect() {
-    console.log(`📵 ${clientName} قطع شد`);
+    console.log(`📵 ${clientName} disconnected`);
     isConnected = false;
 }
 
@@ -111,7 +111,7 @@ function announceConnection() {
 
     const topic = `client/${clientId}/connect`;
     client.publish(topic, JSON.stringify(connectData));
-    console.log(`📢 [${clientName}] اتصال اعلام شد`);
+    console.log(`📢 [${clientName}] Connection announced`);
 }
 
 function sendMessage(text) {
@@ -126,40 +126,40 @@ function sendMessage(text) {
 
     const topic = `client/${clientId}/message`;
     client.publish(topic, JSON.stringify(message));
-    console.log(`📤 [${clientName}] پیام ارسال شد: "${text}"`);
+    console.log(`📤 [${clientName}] Message sent: "${text}"`);
 }
 
 function startClientActivities() {
-    // پیام اول
+    // First message
     setTimeout(() => {
-        sendMessage(`سلام! من ${clientName} هستم`);
+        sendMessage(`Hello! I am ${clientName}`);
     }, 3000);
 
-    // ارسال پیام‌های دوره‌ای
+    // Send periodic messages
     setInterval(() => {
         if (!isConnected) return;
 
         const messages = [
-            'چه خبر؟',
-            'همه چی خوبه',
-            'دارم کار می‌کنم',
-            'یه سوال داشتم',
-            'امروز چطوره؟',
-            'وضعیت عالیه',
-            'کارها رو انجام دادم',
-            'آماده دریافت دستور هستم'
+            'What\'s up?',
+            'Everything is good',
+            'I\'m working',
+            'I have a question',
+            'How is today?',
+            'Status is excellent',
+            'I completed the tasks',
+            'Ready to receive orders'
         ];
 
         const randomMessage = messages[Math.floor(Math.random() * messages.length)];
         sendMessage(randomMessage);
 
-    }, 10000 + Math.random() * 15000); // هر 10-25 ثانیه
+    }, 10000 + Math.random() * 15000); // Every 10-25 seconds
 }
 
 function disconnect(reason = 'normal_shutdown') {
-    console.log(`⏹️  ${clientName} در حال قطع اتصال...`);
+    console.log(`⏹️  ${clientName} disconnecting...`);
 
-    // اعلام قطع اتصال
+    // Announce disconnection
     const disconnectData = {
         clientId: clientId,
         name: clientName,
@@ -171,21 +171,21 @@ function disconnect(reason = 'normal_shutdown') {
     client.publish(topic, JSON.stringify(disconnectData), () => {
         setTimeout(() => {
             client.end();
-            console.log(`✅ ${clientName} قطع شد`);
+            console.log(`✅ ${clientName} disconnected`);
         }, 1000);
     });
 }
 
-// دریافت پارامترها از command line
+// Get parameters from command line
 const cmdClientId = process.argv[2];
 const cmdClientName = process.argv[3];
 
-// مدیریت خروج
+// Exit management
 process.on('SIGINT', () => {
     disconnect('user_interrupt');
     setTimeout(() => process.exit(0), 2000);
 });
 
-// راه‌اندازی کلاینت
-console.log('🌟 راه‌اندازی کلاینت ساده...');
+// Client startup
+console.log('🌟 Starting simple client...');
 init(cmdClientId, cmdClientName);

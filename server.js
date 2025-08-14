@@ -1,38 +1,45 @@
 const mqtt = require('mqtt');
 
-// متغیرهای سراسری
+// Global variables
 const serverId = 'server_main';
 const clients = new Map(); // Map of clientId -> {status, lastSeen, info}
 let client = null;
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3N1IjoxLCJleHAiOjE3NTQ5MDMxODYsImlhdCI6MTc1NDg5OTU4Nn0.tzcCLQMpe3cdhWZtzaxR41gcL4nr8zk-GR425xuhyrc';
 
-// اتصال به MQTT
+// Connect to MQTT
 function connect() {
-    console.log('🔌 سرور در حال اتصال به MQTT...');
-    
+    console.log('🔌 Server connecting to MQTT...');
+
     client = mqtt.connect({
         host: 'localhost',
         port: 11883,
         clientId: serverId,
         username: '',
-        password: token
+        password: token,
+        properties: {
+            userProperties: {
+                r: 'admin',
+                org_id: 'org_123',
+                debug: 'true'
+            }
+        }
     });
-    
+
     client.on('connect', onConnect);
     client.on('message', onMessage);
-    client.on('error', (error) => console.error('❌ خطا:', error));
+    client.on('error', (error) => console.error('❌ Error:', error));
 }
 
 function onConnect() {
-    console.log('✅ سرور متصل شد');
+    console.log('✅ Server connected');
     console.log(`🆔 Server ID: ${serverId}\n`);
-    
-    // Subscribe به topics مختلف
-    client.subscribe('client/+/connect');    // اتصال کلاینت
-    client.subscribe('client/+/disconnect'); // قطع کلاینت
-    client.subscribe('client/+/message');    // پیام از کلاینت
-    
-    console.log('👂 سرور آماده دریافت پیام‌ها');
+
+    // Subscribe to different topics
+    client.subscribe('client/+/connect');    // Client connection
+    client.subscribe('client/+/disconnect'); // Client disconnection
+    client.subscribe('client/+/message');    // Message from client
+
+    console.log('👂 Server ready to receive messages');
     startServerOperations();
 }
 
@@ -42,8 +49,8 @@ function onMessage(topic, message) {
         const parts = topic.split('/');
         const clientId = parts[1];
         const action = parts[2];
-        
-        switch(action) {
+
+        switch (action) {
             case 'connect':
                 handleClientConnect(clientId, data);
                 break;
@@ -55,7 +62,7 @@ function onMessage(topic, message) {
                 break;
         }
     } catch (error) {
-        console.error('❌ خطا در پردازش پیام:', error);
+        console.error('❌ Error processing message:', error);
     }
 }
 
@@ -66,14 +73,14 @@ function handleClientConnect(clientId, data) {
         info: data,
         connectedAt: new Date()
     });
-    
-    console.log(`🟢 کلاینت متصل شد: ${clientId}`);
-    console.log(`   📛 نام: ${data.name || 'ناشناس'}`);
-    console.log(`   ⏰ زمان: ${new Date().toLocaleTimeString('fa-IR')}`);
-    
-    // پیام خوش‌آمدگویی
-    sendToClient(clientId, `سلام ${data.name || clientId}! به سرور خوش آمدید`);
-    
+
+    console.log(`🟢 Client connected: ${clientId}`);
+    console.log(`   📛 Name: ${data.name || 'Unknown'}`);
+    console.log(`   ⏰ Time: ${new Date().toLocaleTimeString('en-US')}`);
+
+    // Welcome message
+    sendToClient(clientId, `Hello ${data.name || clientId}! Welcome to the server`);
+
     showConnectedClients();
 }
 
@@ -82,18 +89,18 @@ function handleClientDisconnect(clientId, data) {
         const clientInfo = clients.get(clientId);
         clientInfo.status = 'offline';
         clientInfo.disconnectedAt = new Date();
-        
-        console.log(`🔴 کلاینت قطع شد: ${clientId}`);
-        console.log(`   💭 دلیل: ${data.reason || 'نامشخص'}`);
-        console.log(`   ⏰ زمان: ${new Date().toLocaleTimeString('fa-IR')}`);
-        
-        // حذف بعد از 2 دقیقه
+
+        console.log(`🔴 Client disconnected: ${clientId}`);
+        console.log(`   💭 Reason: ${data.reason || 'Unknown'}`);
+        console.log(`   ⏰ Time: ${new Date().toLocaleTimeString('en-US')}`);
+
+        // Remove after 2 minutes
         setTimeout(() => {
             clients.delete(clientId);
-            console.log(`🗑️  ${clientId} از لیست حذف شد`);
+            console.log(`🗑️  ${clientId} removed from list`);
         }, 120000);
     }
-    
+
     showConnectedClients();
 }
 
@@ -103,60 +110,60 @@ function handleClientMessage(clientId, data) {
         clientInfo.lastSeen = new Date();
         clientInfo.status = 'online';
     }
-    
-    console.log(`\n📨 پیام از ${clientId}:`);
+
+    console.log(`\n📨 Message from ${clientId}:`);
     console.log(`   💬 "${data.text}"`);
-    console.log(`   ⏰ ${new Date(data.timestamp).toLocaleTimeString('fa-IR')}`);
-    
-    // پاسخ به کلاینت
+    console.log(`   ⏰ ${new Date(data.timestamp).toLocaleTimeString('en-US')}`);
+
+    // Response to client
     const responses = [
-        'پیام شما دریافت شد',
-        'ممنون از پیامتان',
-        'باشه، فهمیدم',
-        'متشکرم',
-        'پیام شما ثبت شد'
+        'Message received',
+        'Thank you for your message',
+        'Got it',
+        'Thanks',
+        'Message recorded'
     ];
     const response = responses[Math.floor(Math.random() * responses.length)];
-    
+
     setTimeout(() => {
         sendToClient(clientId, response);
     }, 1000);
 }
 
-// ارسال پیام به کلاینت مشخص
+// Send message to specific client
 function sendToClient(clientId, text) {
     const message = {
         from: 'server',
         text: text,
         timestamp: new Date().toISOString()
     };
-    
+
     const topic = `server/to/${clientId}`;
     client.publish(topic, JSON.stringify(message));
-    console.log(`📤 پیام ارسال شد به ${clientId}: "${text}"`);
+    console.log(`📤 Message sent to ${clientId}: "${text}"`);
 }
 
-// ارسال پیام عمومی
+// Send public message
 function sendBroadcast(text) {
     const message = {
         from: 'server',
         text: text,
         timestamp: new Date().toISOString()
     };
-    
+
     client.publish('server/broadcast', JSON.stringify(message));
-    console.log(`📢 پیام عمومی ارسال شد: "${text}"`);
+    console.log(`📢 Public message sent: "${text}"`);
 }
 
 function startServerOperations() {
-    console.log('\n🚀 سرور آماده است...\n');
-    
-    // نمایش کلاینت‌های متصل هر 30 ثانیه
+    console.log('\n🚀 Server is ready...\n');
+
+    // Show connected clients every 30 seconds
     setInterval(() => {
         showConnectedClients();
     }, 30000);
-    
-    // ارسال پیام‌های تستی
+
+    // Send test messages
     setInterval(() => {
         sendTestMessages();
     }, 15000);
@@ -165,33 +172,33 @@ function startServerOperations() {
 function sendTestMessages() {
     const onlineClients = Array.from(clients.entries())
         .filter(([_, clientInfo]) => clientInfo.status === 'online');
-        
+
     if (onlineClients.length === 0) {
-        console.log('⏳ هیچ کلاینت آنلاینی نیست');
+        console.log('⏳ No online clients');
         return;
     }
-    
-    // گاهی پیام شخصی، گاهی عمومی
+
+    // Sometimes personal message, sometimes public
     if (Math.random() > 0.5) {
-        // پیام شخصی
+        // Personal message
         const [randomClientId] = onlineClients[Math.floor(Math.random() * onlineClients.length)];
         const messages = [
-            'چطوری؟',
-            'وضعیتت چطوره؟',
-            'یه کار جدید برات دارم',
-            'همه چی خوبه؟',
-            'چه خبر؟'
+            'How are you?',
+            'How is everything?',
+            'I have a new task for you',
+            'Is everything okay?',
+            'What\'s up?'
         ];
         const randomMessage = messages[Math.floor(Math.random() * messages.length)];
         sendToClient(randomClientId, randomMessage);
     } else {
-        // پیام عمومی
+        // Public message
         const messages = [
-            'سلام به همه!',
-            'وضعیت سیستم خوبه',
-            'یادتون باشه گزارش بدین',
-            'فعالیت‌هاتون رو ادامه بدین',
-            'روز خوبی داشته باشین'
+            'Hello everyone!',
+            'System status is good',
+            'Remember to submit reports',
+            'Keep up your activities',
+            'Have a great day'
         ];
         const randomMessage = messages[Math.floor(Math.random() * messages.length)];
         sendBroadcast(randomMessage);
@@ -201,41 +208,41 @@ function sendTestMessages() {
 function showConnectedClients() {
     const onlineCount = Array.from(clients.values()).filter(c => c.status === 'online').length;
     const totalCount = clients.size;
-    
-    console.log(`\n📊 وضعیت کلاینت‌ها: ${onlineCount}/${totalCount} آنلاین`);
-    
+
+    console.log(`\n📊 Client Status: ${onlineCount}/${totalCount} online`);
+
     if (clients.size > 0) {
         console.log('┌─────────────┬─────────┬─────────────────────┐');
         console.log('│ Client ID   │ Status  │ Last Seen           │');
         console.log('├─────────────┼─────────┼─────────────────────┤');
-        
+
         clients.forEach((clientInfo, clientId) => {
             const id = clientId.substring(0, 11).padEnd(11);
-            const status = clientInfo.status === 'online' ? '🟢 آنلاین' : '🔴 آفلاین';
-            const lastSeen = clientInfo.lastSeen.toLocaleTimeString('fa-IR').padEnd(19);
-            
+            const status = clientInfo.status === 'online' ? '🟢 Online' : '🔴 Offline';
+            const lastSeen = clientInfo.lastSeen.toLocaleTimeString('en-US').padEnd(19);
+
             console.log(`│ ${id} │ ${status} │ ${lastSeen} │`);
         });
-        
+
         console.log('└─────────────┴─────────┴─────────────────────┘');
     }
     console.log('');
 }
 
 function shutdown() {
-    console.log('\n⏹️  سرور در حال خاموش شدن...');
-    
-    sendBroadcast('سرور خاموش می‌شود. خداحافظ!');
-    
+    console.log('\n⏹️  Server shutting down...');
+
+    sendBroadcast('Server is shutting down. Goodbye!');
+
     setTimeout(() => {
         client.end();
         process.exit(0);
     }, 2000);
 }
 
-// مدیریت خروج
+// Exit management
 process.on('SIGINT', shutdown);
 
-// راه‌اندازی سرور
-console.log('🌟 راه‌اندازی سرور ساده...');
+// Server startup
+console.log('🌟 Starting simple server...');
 connect();

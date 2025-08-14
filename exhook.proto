@@ -11,6 +11,8 @@ service HookProvider {
   rpc OnClientConnect(ClientConnectRequest) returns (EmptySuccess) {};
 
   rpc OnClientAuthenticate(ClientAuthenticateRequest) returns (ValuedResponse) {};
+
+  rpc OnClientAuthorize(ClientAuthorizeRequest) returns (ValuedResponse) {};
 }
 
 // Provider Loaded Request
@@ -37,6 +39,29 @@ message ClientAuthenticateRequest {
   ClientInfo clientinfo = 1;
   bool result = 2;
   RequestMeta meta = 3;
+}
+
+message ClientAuthorizeRequest {
+
+  ClientInfo clientinfo = 1;
+
+  enum AuthorizeReqType {
+
+    PUBLISH = 0;
+
+    SUBSCRIBE = 1;
+  }
+
+  AuthorizeReqType type = 2;
+
+  // In ClientAuthorizeRequest.
+  // Only "real-topic" will be serialized in gRPC request when shared-sub.
+  // For example, when client subscribes to `$share/group/t/1`, the real topic is `t/1`.
+  string topic = 3;
+
+  bool result = 4;
+
+  RequestMeta meta = 5;
 }
 
 // Response types

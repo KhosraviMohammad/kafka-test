@@ -23,20 +23,23 @@ const hookProviderService = {
     OnProviderLoaded: (call, callback) => {
         console.log('🚀 Provider loaded:', call.request.broker);
         console.log('📊 Meta:', call.request.meta);
-
+        const hooks = [
+            {
+                "name": "client.connect",
+                "topics": []
+            },
+            {
+                "name": "client.authenticate",
+                "topics": []
+            },
+            {
+                "name": "client.authorize",
+                "topics": [] // # means all topics
+            }
+        ]
         // Return which hooks we want to handle
         return callback(null, {
-            hooks: [
-                {
-                    "name": "client.connect",
-                    "topics": []
-                },
-                {
-                    "name": "client.authenticate",
-                    "topics": []
-                },
-                
-            ]
+            hooks
         });
     },
 
@@ -80,6 +83,14 @@ const hookProviderService = {
         // }
     },
 
+    // Called when a client tries to publish or subscribe
+    OnClientAuthorize: (call, callback) => {
+        const { clientinfo, topic, type } = call.request;
+        callback(null, {
+            type: 'CONTINUE',
+            bool_result: true
+        });
+    },
 
 };
 

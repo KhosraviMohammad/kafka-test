@@ -24,6 +24,24 @@ services:
     networks:
       - emqx_network
 
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ISPM
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - emqx_network
+    restart: unless-stopped
+
   # Optional: MQTT client tool for testing
   mqtt-client:
     image: alpine:latest
@@ -36,11 +54,23 @@ services:
       - emqx_network
     depends_on:
       - emqx
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: amir@123
+      ME_CONFIG_MONGODB_SERVER: mongo
 
 volumes:
   emqx_data:
   emqx_log:
+  postgres_data:
 
 networks:
   emqx_network:
     driver: bridge
+
