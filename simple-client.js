@@ -23,12 +23,17 @@ const client = createMQTTClient('simple_client_001', handleRegistration, handleS
 setInterval(() => {
     if (isRegistered) {
         client.sendNotification({
-            type: 'heartbeat',
-            message: 'Hello from simple client',
-            timestamp: new Date().toISOString()
+            type: 'NOTIFICATION_REQUEST',
+            data: {
+                targetedUserSid: 1,
+                isValidUntil: 30,
+                notifId: Math.floor(10000 + Math.random() * 90000).toString(),
+
+            }
         });
+        console.log('🔥 Notification sent');
     }
-}, 5000);
+}, 25000);
 
 // Send log every 10 seconds
 setInterval(() => {
@@ -36,10 +41,11 @@ setInterval(() => {
         client.sendLog({
             level: 'info',
             message: 'Periodic log message',
-            timestamp: new Date().toISOString()
+            test: 1
         });
+        console.log('🔥 Log sent');
     }
-}, 5000);
+}, 25000);
 
 console.log('🚀 Simple MQTT client started');
 console.log('📤 Will send notifications and logs every 10 seconds after registration');
