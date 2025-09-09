@@ -25,7 +25,7 @@ setInterval(() => {
         client.sendNotification({
             type: 'NOTIFICATION_REQUEST',
             data: {
-                targetedUserSid: 1,
+                targetedUserSidX: 1,
                 isValidUntil: 30,
                 notifId: Math.floor(10000 + Math.random() * 90000).toString(),
 
