@@ -1,7 +1,7 @@
 import mqtt from 'mqtt';
 
 function createMQTTClient(clientId, registrationHandler, serverNotificationHandler) {
-//   const SERVER_URI = 'mqtt://185.231.182.175:11883';
+  // const SERVER_URI = 'mqtt://185.231.182.175:11883';
   const SERVER_URI = 'mqtt://127.0.0.1:11883';
   const REGISTRY_TOPIC = `registry/client/${clientId}`;
   const NOTIFICATION_TOPIC = `message/client/${clientId}`;
@@ -17,7 +17,9 @@ function createMQTTClient(clientId, registrationHandler, serverNotificationHandl
     properties: {
       userProperties: {
         data: JSON.stringify({
+          agentType: "active directory",
           username: "fari",
+          agentDomain: "test",
           roles: ["admin", "editor"],
           location: {
             Germany: 222,
