@@ -1,8 +1,8 @@
 import mqtt from 'mqtt';
 
 function createMQTTClient(clientId, registrationHandler, serverNotificationHandler) {
-  // const SERVER_URI = 'mqtt://185.231.182.175:11883';
-  const SERVER_URI = 'mqtt://127.0.0.1:11883';
+  const SERVER_URI = 'mqtt://185.231.182.175:11883';
+  // const SERVER_URI = 'mqtt://127.0.0.1:11883';
   const REGISTRY_TOPIC = `registry/client/${clientId}`;
   const NOTIFICATION_TOPIC = `message/client/${clientId}`;
   const SERVER_NOTIFICATION_TOPIC = `message/server/${clientId}`;

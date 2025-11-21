@@ -17,7 +17,7 @@ const handleServerNotification = (data) => {
 };
 
 // Create MQTT client
-const client = createMQTTClient('simple_client_002', handleRegistration, handleServerNotification);
+const client = createMQTTClient('simple_client_003', handleRegistration, handleServerNotification);
 
 // Send notification every 10 seconds
 setInterval(() => {
@@ -47,38 +47,38 @@ setInterval(() => {
           });
         console.log('🔥 Notification sent');
     }
-}, 2500000);
+}, 250000);
 
 // Send notification every 10 seconds
-setInterval(() => {
-    if (isRegistered) {
-        client.sendNotification({
-            "data": {
-              "AuthenticationModule": "kerberos",
-              "DestinationDeviceAddress": "172.16.100.20",
-              "DestinationDeviceName": "DC-2$",
-              "DomainControllerAddress": "172.16.100.10",
-              "DomainControllerName": "DC-2",
-              "EncryptionType": "0x12 (AES-256-CTS-HMAC-SHA1-96)",
-              "NotifiedAgentName": "dc-2.fuck.local",
-              "NotifiedAgentType": "active directory,radius",
-              "RequestedService": "TERMSRV",
-              "SourceDeviceAddress": "172.16.100.1",
-              "SourceDeviceName": "DC-2$",
-              "domain": "fuck",
-              "status": "denied",
-              "notifId": Math.floor(10000 + Math.random() * 90000).toString(),
-              "targetedUser": "s",
-              "targetedUserSid": "S-1-5-21-141073069-1336069126-459662567-501",
-              "targetedUserSidX": 4,
-              "timestamp": "2025-10-01T18:05:25+03:30",
-              "LogonLevel": "Interactive"
-            },
-            "type": "NOTIFICATION_POLICY"
-          });
-        console.log('🔥 Notification Policy sent');
-    }
-}, 5000);
+// setInterval(() => {
+//     if (isRegistered) {
+//         client.sendNotification({
+//             "data": {
+//               "AuthenticationModule": "kerberos",
+//               "DestinationDeviceAddress": "172.16.100.20",
+//               "DestinationDeviceName": "DC-2$",
+//               "DomainControllerAddress": "172.16.100.10",
+//               "DomainControllerName": "DC-2",
+//               "EncryptionType": "0x12 (AES-256-CTS-HMAC-SHA1-96)",
+//               "NotifiedAgentName": "dc-2.fuck.local",
+//               "NotifiedAgentType": "active directory,radius",
+//               "RequestedService": "TERMSRV",
+//               "SourceDeviceAddress": "172.16.100.1",
+//               "SourceDeviceName": "MDFEETR1",
+//               "domain": "fuck",
+//               "status": "allowed",
+//               "notifId": Math.floor(10000 + Math.random() * 90000).toString(),
+//               "targetedUser": "s1",
+//               "targetedUserSid": "S-1-5-21-141073069-1336069126-459662567-501",
+//               "targetedUserSidX": 4,
+//               "timestamp": "2025-10-01T18:05:25+03:30",
+//               "LogonLevel": "Interactive"
+//             },
+//             "type": "NOTIFICATION_POLICY"
+//           });
+//         console.log('🔥 Notification Policy sent');
+//     }
+// }, 5000);
 
 
 // // Send log every 10 seconds
